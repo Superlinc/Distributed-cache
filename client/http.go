@@ -24,15 +24,16 @@ func (c *httpClient) get(key string) string {
 	if resp.StatusCode != http.StatusOK {
 		panic(resp.Status)
 	}
-	body, e := ioutil.ReadAll(resp.Body)
+	b, e := ioutil.ReadAll(resp.Body)
 	if e != nil {
 		panic(e)
 	}
-	return string(body)
+	return string(b)
 }
 
 func (c *httpClient) set(key, value string) {
-	req, e := http.NewRequest(http.MethodPut, c.server+key, strings.NewReader(value))
+	req, e := http.NewRequest(http.MethodPut,
+		c.server+key, strings.NewReader(value))
 	if e != nil {
 		log.Println(key)
 		panic(e)
@@ -48,23 +49,22 @@ func (c *httpClient) set(key, value string) {
 }
 
 func (c *httpClient) Run(cmd *Cmd) {
-	switch cmd.Name {
-	case "get":
+	if cmd.Name == "get" {
 		cmd.Value = c.get(cmd.Key)
 		return
-	case "set":
+	}
+	if cmd.Name == "set" {
 		c.set(cmd.Key, cmd.Value)
 		return
-	default:
-		panic("unknown cmd name " + cmd.Name)
 	}
+	panic("unknown cmd name " + cmd.Name)
+}
+
+func newHTTPClient(server string) *httpClient {
+	client := &http.Client{Transport: &http.Transport{MaxIdleConnsPerHost: 1}}
+	return &httpClient{client, "http://" + server + ":12345/cache/"}
 }
 
 func (c *httpClient) PipelinedRun([]*Cmd) {
 	panic("httpClient pipelined run not implement")
-}
-
-func newHttpClient(server string) *httpClient {
-	client := &http.Client{Transport: &http.Transport{MaxIdleConnsPerHost: 1}}
-	return &httpClient{client, "http://" + server + ":12345/cache/"}
 }
