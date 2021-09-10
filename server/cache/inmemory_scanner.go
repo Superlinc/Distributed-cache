@@ -32,12 +32,12 @@ func (c *inMemoryCache) NewScanner() Scanner {
 	go func() {
 		defer close(pairCh)
 		c.mutex.RLock()
-		for k, v := range c.c {
+		for k, ele := range c.cache {
 			c.mutex.RUnlock()
 			select {
 			case <-closeCh:
 				return
-			case pairCh <- &pair{k, v.v}:
+			case pairCh <- &pair{k, ele.Value.(*entry).v}:
 			}
 			c.mutex.RLock()
 		}

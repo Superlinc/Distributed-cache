@@ -2,10 +2,10 @@ package cache
 
 import "log"
 
-func New(typ string, ttl int) Cache {
+func New(typ string, ttl, cap int) Cache {
 	var c Cache
 	if typ == "inmemory" {
-		c = newInMemoryCache(ttl)
+		c = newInMemoryCache(ttl, cap)
 	}
 	if c == nil {
 		panic("unknown cache type " + typ)
